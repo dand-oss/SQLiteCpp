@@ -23,6 +23,17 @@ ELSE()
 cmake_minimum_required(VERSION 2.6)
 project(SQLiteCpp)
 
+###############
+# ASI default settings
+list(APPEND CMAKE_MODULE_PATH "$ENV{ASI}/cmake/Modules")
+include(asv_cmake_defaults)
+asv_cmake_defaults( )
+###############
+
+
+include_directories(AFTER ${ASV_3RDPARTY}/include)
+
+
 option(SQLITE_ENABLE_COLUMN_METADATA "Enable Column::getName(). Require support from sqlite3 library." OFF)
 if (SQLITE_ENABLE_COLUMN_METADATA) 
     # Enable the use of SQLite column metadata and Column::getName() method,
@@ -49,10 +60,10 @@ if (MSVC)
     # disable Visual Studio warnings for fopen() used in the example
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     # Flags for linking with multithread static C++ runtime
-    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} /MT")
-    set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG} /MTd")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+    #    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} /MT")
+    #set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG} /MTd")
+    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+    #set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 else (MSVC)
     set(CPPLINT_ARG_OUTPUT      "--output=eclipse")
     set(CPPCHECK_ARG_TEMPLATE   "--template=gcc")
@@ -121,7 +132,7 @@ source_group(doc FILES ${SQLITECPP_DOC})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # add sources of the wrapper as a "SQLiteCpp" static library
-add_library(SQLiteCpp ${SQLITECPP_SRC} ${SQLITECPP_INC} ${SQLITECPP_DOC})
+add_library(SQLiteCpp STATIC ${SQLITECPP_SRC} ${SQLITECPP_INC} ${SQLITECPP_DOC})
 
 if (UNIX AND (CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     set_target_properties(SQLiteCpp PROPERTIES COMPILE_FLAGS "-fPIC")
@@ -130,7 +141,7 @@ endif (UNIX AND (CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL
 
 # SQLite3 library (Windows only)
 
-option (SQLITECPP_INTERNAL_SQLITE "Add the internal SQLite3 source to the project." ON)
+option (SQLITECPP_INTERNAL_SQLITE "Add the internal SQLite3 source to the project." OFF)
 if (WIN32)
     if (SQLITECPP_INTERNAL_SQLITE)
         # build the SQLite3 C library for Windows (for ease of use) versus Linux sqlite3-dev package
@@ -223,3 +234,8 @@ else (SQLITECPP_BUILD_TESTS)
     message(STATUS "SQLITECPP_BUILD_TESTS OFF")
 endif (SQLITECPP_BUILD_TESTS)
 ENDIF()
+
+install(TARGETS SQLiteCpp
+	ARCHIVE DESTINATION lib
+       	LIBRARY DESTINATION lib)
+install(DIRECTORY include/SQLiteCpp DESTINATION include)
